@@ -125,6 +125,23 @@ static void RLMCreateColumn(RLMRealm *realm, realm::Table &table, RLMProperty *p
             prop.column = table.add_column_link(realm::DataType(prop.type), prop.name.UTF8String, *linkTable);
             break;
         }
+        default: {
+            bool optional = prop.optional;
+            if (optional && prop.type != RLMPropertyTypeString) {
+                optional = false;
+                NSLog(@"Optional properties are only supported for String properties");
+            }
+            prop.column = table.add_column(realm::DataType(prop.type), prop.name.UTF8String, optional);
+            if (prop.indexed) {
+                // FIXME - support other types
+                if (prop.type != RLMPropertyTypeString) {
+                    NSLog(@"RLMPropertyAttributeIndexed only supported for 'NSString' properties");
+                }
+                else {
+                    table.add_search_index(prop.column);
+                }
+            }
+        }
         default:
             prop.column = table.add_column(realm::DataType(prop.type), prop.name.UTF8String);
             break;
@@ -497,8 +514,12 @@ RLMObjectBase *RLMCreateObjectInRealmWithValue(RLMRealm *realm, NSString *classN
         for (NSUInteger i = 0; i < array.count; i++) {
             RLMProperty *prop = props[i];
             // skip primary key when updating since it doesn't change
+            id propValue = array[i];
+            if (propValue == NSNull.null) {
+                propValue = nil;
+            }
             if (created || !prop.isPrimary) {
-                RLMDynamicSet(object, prop, array[i],
+                RLMDynamicSet(object, prop, propValue,
                               options | RLMCreationOptionsUpdateOrCreate | (prop.isPrimary ? RLMCreationOptionsEnforceUnique : 0));
             }
         }
@@ -517,6 +538,9 @@ RLMObjectBase *RLMCreateObjectInRealmWithValue(RLMRealm *realm, NSString *classN
             // skip missing properties and primary key when updating since it doesn't change
             id propValue = dict[prop.name];
             if (propValue && (created || !prop.isPrimary)) {
+                if (propValue == NSNull.null) {
+                    propValue = nil;
+                }
                 RLMDynamicSet(object, prop, propValue,
                               options | RLMCreationOptionsUpdateOrCreate | (prop.isPrimary ? RLMCreationOptionsEnforceUnique : 0));
             }

@@ -781,5 +781,36 @@
     XCTAssertNoThrow([self realmWithTestPath]);
 }
 
-@end
+- (void)testChangingColumnNullability {
+    RLMSchema *nullable = [[RLMSchema alloc] init];
+    nullable.objectSchema = @[[RLMObjectSchema schemaForObjectClass:StringObject.class]];
 
+    RLMSchema *nonnull = [[RLMSchema alloc] init];
+    RLMObjectSchema *objectSchema = [RLMObjectSchema schemaForObjectClass:StringObject.class];
+    [objectSchema.properties[0] setOptional:NO];
+    nonnull.objectSchema = @[objectSchema];
+
+    // create initial required column
+    @autoreleasepool {
+        [self realmWithTestPathAndSchema:nonnull];
+    }
+
+    // attempt to open with an optional column
+    @autoreleasepool {
+        XCTAssertThrows([self realmWithTestPathAndSchema:nullable]);
+    }
+
+    [self deleteFiles];
+
+    // create initial optional column
+    @autoreleasepool {
+        [self realmWithTestPathAndSchema:nullable];
+    }
+
+    // attempt to open with a required column
+    @autoreleasepool {
+        XCTAssertThrows([self realmWithTestPathAndSchema:nonnull]);
+    }
+}
+
+@end

@@ -65,7 +65,12 @@ const NSUInteger RLMDescriptionMaxDepth = 5;
         array = RLMValidatedArrayForObjectSchema(array, _objectSchema, schema);
         NSArray *properties = _objectSchema.properties;
         for (NSUInteger i = 0; i < array.count; i++) {
-            [self setValue:array[i] forKeyPath:[properties[i] name]];
+            id propertyValue = array[i];
+            // strip out NSNull before passing values to standalone setters
+            if (propertyValue == NSNull.null) {
+                propertyValue = nil;
+            }
+            [self setValue:propertyValue forKeyPath:[properties[i] name]];
         }
     }
     else {

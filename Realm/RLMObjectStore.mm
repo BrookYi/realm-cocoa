@@ -412,6 +412,9 @@ static inline NSUInteger RLMCreateOrGetRowForObject(RLMObjectSchema *schema, F p
     if ((options & RLMCreationOptionsUpdateOrCreate) && primaryProperty) {
         // get primary value
         id primaryValue = primaryValueGetter(primaryProperty);
+        if (primaryValue == NSNull.null) {
+            primaryValue = nil;
+        }
         
         // search for existing object based on primary key type
         if (primaryProperty.type == RLMPropertyTypeString) {

@@ -65,11 +65,8 @@ const NSUInteger RLMDescriptionMaxDepth = 5;
         array = RLMValidatedArrayForObjectSchema(array, _objectSchema, schema);
         NSArray *properties = _objectSchema.properties;
         for (NSUInteger i = 0; i < array.count; i++) {
-            id propertyValue = array[i];
             // strip out NSNull before passing values to standalone setters
-            if (propertyValue == NSNull.null) {
-                propertyValue = nil;
-            }
+            id propertyValue = RLMNSNullToNil(array[i]);
             [self setValue:propertyValue forKeyPath:[properties[i] name]];
         }
     }
@@ -77,11 +74,8 @@ const NSUInteger RLMDescriptionMaxDepth = 5;
         // assume our object is an NSDictionary or a an object with kvc properties
         NSDictionary *dict = RLMValidatedDictionaryForObjectSchema(value, _objectSchema, schema);
         for (NSString *name in dict) {
-            id val = dict[name];
             // strip out NSNull before passing values to standalone setters
-            if (val == NSNull.null) {
-                val = nil;
-            }
+            id val = RLMNSNullToNil(dict[name]);
             [self setValue:val forKeyPath:name];
         }
     }

@@ -20,6 +20,10 @@ x.xx.x Release notes (yyyy-MM-dd)
 * `Int8` properties defined in Swift are now treated as integers, rather than
   booleans.
 
+### Bugfixes
+
+* Linked objects are properly updated in `createOrUpdateInRealm:withValue`.
+
 0.91.5 Release notes (2015-04-28)
 =============================================================
 
